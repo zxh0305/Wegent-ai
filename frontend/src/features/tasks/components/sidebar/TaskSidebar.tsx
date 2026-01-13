@@ -74,6 +74,7 @@ export default function TaskSidebar({
     isSearchResult,
     getUnreadCount,
     markAllTasksAsViewed,
+    markGroupChatsAsViewed,
     viewStatusVersion,
     setSelectedTask,
     isRefreshing,
@@ -155,12 +156,23 @@ export default function TaskSidebar({
     markAllTasksAsViewed()
   }
 
+  // Mark all group chats as viewed
+  const handleMarkGroupChatsAsViewed = () => {
+    markGroupChatsAsViewed()
+  }
+
   // Calculate total unread count
   // Include viewStatusVersion in dependencies to recalculate when view status changes
   const totalUnreadCount = React.useMemo(() => {
     return getUnreadCount(tasks)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tasks, getUnreadCount, viewStatusVersion])
+
+  // Calculate group chats unread count
+  const groupChatsUnreadCount = React.useMemo(() => {
+    return getUnreadCount(groupTasks)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupTasks, getUnreadCount, viewStatusVersion])
 
   // Refs for separate scroll containers
   const groupScrollRef = useRef<HTMLDivElement>(null)
@@ -504,8 +516,17 @@ export default function TaskSidebar({
                 {groupTasks.length > 0 && (
                   <>
                     {!isCollapsed && (
-                      <div className="px-1 pb-1 text-xs font-medium text-text-muted">
-                        {t('common:tasks.group_chats')}
+                      <div className="px-1 pb-1 text-xs font-medium text-text-muted flex items-center justify-between">
+                        <span>{t('common:tasks.group_chats')}</span>
+                        {/* Mark Group Chats As Read Button - show only when there are unread group chats */}
+                        {groupChatsUnreadCount > 0 && (
+                          <button
+                            onClick={handleMarkGroupChatsAsViewed}
+                            className="text-xs text-text-muted hover:text-text-primary transition-colors"
+                          >
+                            {t('common:tasks.mark_group_chats_read')} ({groupChatsUnreadCount})
+                          </button>
+                        )}
                       </div>
                     )}
                     <TaskListSection
