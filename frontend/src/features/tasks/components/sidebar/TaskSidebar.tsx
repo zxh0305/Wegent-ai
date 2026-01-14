@@ -73,8 +73,8 @@ export default function TaskSidebar({
     isSearching,
     isSearchResult,
     getUnreadCount,
-    markAllTasksAsViewed,
     markGroupChatsAsViewed,
+    markPersonalTasksAsViewed,
     viewStatusVersion,
     setSelectedTask,
     isRefreshing,
@@ -151,9 +151,9 @@ export default function TaskSidebar({
     setIsMobileSidebarOpen(false)
   }
 
-  // Mark all tasks as viewed
-  const handleMarkAllAsViewed = () => {
-    markAllTasksAsViewed()
+  // Mark all personal tasks as viewed
+  const handleMarkPersonalTasksAsViewed = () => {
+    markPersonalTasksAsViewed()
   }
 
   // Mark all group chats as viewed
@@ -161,18 +161,17 @@ export default function TaskSidebar({
     markGroupChatsAsViewed()
   }
 
-  // Calculate total unread count
-  // Include viewStatusVersion in dependencies to recalculate when view status changes
-  const totalUnreadCount = React.useMemo(() => {
-    return getUnreadCount(tasks)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tasks, getUnreadCount, viewStatusVersion])
-
   // Calculate group chats unread count
   const groupChatsUnreadCount = React.useMemo(() => {
     return getUnreadCount(groupTasks)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [groupTasks, getUnreadCount, viewStatusVersion])
+
+  // Calculate personal tasks unread count
+  const personalTasksUnreadCount = React.useMemo(() => {
+    return getUnreadCount(personalTasks)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [personalTasks, getUnreadCount, viewStatusVersion])
 
   // Refs for separate scroll containers
   const groupScrollRef = useRef<HTMLDivElement>(null)
@@ -640,13 +639,13 @@ export default function TaskSidebar({
                             </Tooltip>
                           </TooltipProvider>
                         </div>
-                        {/* Mark All As Read Button - show only when there are unread tasks */}
-                        {totalUnreadCount > 0 && (
+                        {/* Mark Personal Tasks As Read Button - show only when there are unread personal tasks */}
+                        {personalTasksUnreadCount > 0 && (
                           <button
-                            onClick={handleMarkAllAsViewed}
+                            onClick={handleMarkPersonalTasksAsViewed}
                             className="text-xs text-text-muted hover:text-text-primary transition-colors"
                           >
-                            {t('common:tasks.mark_all_read')} ({totalUnreadCount})
+                            {t('common:tasks.mark_all_read')} ({personalTasksUnreadCount})
                           </button>
                         )}
                       </div>
