@@ -375,7 +375,7 @@
     "group_chats": "Group Chats",
     "group_chats_expand": "Show {{count}}{{suffix}} more",
     "group_chats_collapse": "Show less",
-    "mark_group_chats_read": "Clear unread",
+    "mark_group_chats_read": "Mark all as read",
     "conversations": "Conversations",
     "search_placeholder": "Search task",
     "search_placeholder_chat": "Search conversation",
