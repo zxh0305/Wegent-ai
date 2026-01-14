@@ -375,7 +375,7 @@
     "group_chats": "群聊",
     "group_chats_expand": "展开群聊（+{{count}}{{suffix}}）",
     "group_chats_collapse": "收起群聊",
-    "mark_group_chats_read": "清除未读",
+    "mark_group_chats_read": "全部标记为已读",
     "conversations": "对话",
     "search_placeholder": "搜索任务",
     "search_placeholder_chat": "搜索对话",
