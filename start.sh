@@ -154,7 +154,7 @@ check_mysql_redis() {
     fi
 
     if [ "$mysql_running" = true ] && [ "$redis_running" = true ]; then
-        echo -e "${GREEN}✓ MySQL and Redis are already running${NC}"
+        echo -e "${GREEN}�?MySQL and Redis are already running${NC}"
         return 0
     fi
 
@@ -187,7 +187,7 @@ check_mysql_redis() {
         fi
         
         if [ "$mysql_healthy" = true ] && [ "$redis_healthy" = true ]; then
-            echo -e "${GREEN}✓ MySQL and Redis are ready${NC}"
+            echo -e "${GREEN}�?MySQL and Redis are ready${NC}"
             return 0
         fi
         
@@ -307,9 +307,9 @@ sync_python_deps() {
         echo -e "  ${YELLOW}Syncing dependencies for $name...${NC}"
         # Use --frozen to avoid modifying uv.lock file
         uv sync --frozen
-        echo -e "  ${GREEN}✓${NC} $name dependencies synced"
+        echo -e "  ${GREEN}�?{NC} $name dependencies synced"
     else
-        echo -e "  ${GREEN}✓${NC} $name dependencies are up to date"
+        echo -e "  ${GREEN}�?{NC} $name dependencies are up to date"
     fi
 
     cd "$SCRIPT_DIR"
@@ -326,9 +326,9 @@ check_python_env() {
             exit 1
         fi
         cp .env.example .env
-        echo -e "${GREEN}✓ $name Created .env from .env.example${NC}"
+        echo -e "${GREEN}�?$name Created .env from .env.example${NC}"
     else
-        echo -e "${GREEN}✓ $name .env file already exists${NC}"
+        echo -e "${GREEN}�?$name .env file already exists${NC}"
     fi
     cd "$SCRIPT_DIR"
 }
@@ -342,7 +342,7 @@ check_frontend_dependencies() {
         cd "$frontend_dir"
         npm install --ignore-scripts
         cd "$SCRIPT_DIR"
-        echo -e "${GREEN}✓ Frontend dependencies installed${NC}"
+        echo -e "${GREEN}�?Frontend dependencies installed${NC}"
         return
     fi
 
@@ -355,7 +355,7 @@ check_frontend_dependencies() {
         cd "$frontend_dir"
         npm install --ignore-scripts && touch "$marker_file"
         cd "$SCRIPT_DIR"
-        echo -e "${GREEN}✓ Frontend dependencies updated${NC}"
+        echo -e "${GREEN}�?Frontend dependencies updated${NC}"
         return
     fi
 
@@ -366,7 +366,7 @@ check_frontend_dependencies() {
             cd "$frontend_dir"
             npm install --ignore-scripts && touch "$marker_file"
             cd "$SCRIPT_DIR"
-            echo -e "${GREEN}✓ Frontend dependencies updated${NC}"
+            echo -e "${GREEN}�?Frontend dependencies updated${NC}"
             return
         fi
     fi
@@ -376,7 +376,7 @@ check_frontend_dependencies() {
         touch "$marker_file"
     fi
 
-    echo -e "${GREEN}✓ Frontend dependencies are up to date${NC}"
+    echo -e "${GREEN}�?Frontend dependencies are up to date${NC}"
 }
 
 # Default configuration
@@ -527,7 +527,7 @@ check_all_ports() {
     if [ ${#conflicts[@]} -gt 0 ]; then
         echo -e "${RED}Port conflict! The following ports are already in use:${NC}"
         for conflict in "${conflicts[@]}"; do
-            echo -e "  ${RED}●${NC} $conflict"
+            echo -e "  ${RED}�?{NC} $conflict"
         done
         echo ""
         echo -e "${YELLOW}Solutions:${NC}"
@@ -556,7 +556,8 @@ stop_services() {
             local pid=$(cat "$pid_file")
             if kill -0 "$pid" 2>/dev/null; then
                 echo -e "  Stopping $service (PID: $pid)..."
-                kill "$pid" 2>/dev/null || true
+                # Try to kill the entire process group first
+                kill -- -"$pid" 2>/dev/null || kill "$pid" 2>/dev/null || true
                 # Wait for process to exit
                 for i in {1..10}; do
                     if ! kill -0 "$pid" 2>/dev/null; then
@@ -564,20 +565,30 @@ stop_services() {
                     fi
                     sleep 0.5
                 done
-                # Force terminate
+                # Force terminate the process group
                 if kill -0 "$pid" 2>/dev/null; then
-                    kill -9 "$pid" 2>/dev/null || true
+                    kill -9 -- -"$pid" 2>/dev/null || kill -9 "$pid" 2>/dev/null || true
                 fi
             fi
             rm -f "$pid_file"
         fi
     done
 
-    # Clean up potentially remaining processes
-    pkill -f "uvicorn app.main:app" 2>/dev/null || true
-    pkill -f "uvicorn main:app.*8001" 2>/dev/null || true
-    pkill -f "uvicorn chat_shell.main:app" 2>/dev/null || true
-    pkill -f "npm run dev.*$FRONTEND_PORT" 2>/dev/null || true
+    # Clean up potentially remaining processes more aggressively
+    # Kill uvicorn processes by port
+    for port in 8000 8001 8100; do
+        local pids=$(lsof -t -i:$port 2>/dev/null)
+        if [ -n "$pids" ]; then
+            echo -e "  Cleaning up processes on port $port..."
+            echo "$pids" | xargs kill -9 2>/dev/null || true
+        fi
+    done
+
+    # Also try pkill as fallback
+    pkill -9 -f "uvicorn app.main:app" 2>/dev/null || true
+    pkill -9 -f "uvicorn main:app" 2>/dev/null || true
+    pkill -9 -f "uvicorn chat_shell.main:app" 2>/dev/null || true
+    pkill -9 -f "npm run dev" 2>/dev/null || true
 
     echo -e "${GREEN}All services stopped${NC}"
 }
@@ -597,17 +608,17 @@ show_status() {
         if [ -f "$pid_file" ]; then
             local pid=$(cat "$pid_file")
             if kill -0 "$pid" 2>/dev/null; then
-                echo -e "  ${GREEN}●${NC} $service (PID: $pid, Port: $port)"
+                echo -e "  ${GREEN}�?{NC} $service (PID: $pid, Port: $port)"
             else
-                echo -e "  ${RED}●${NC} $service (exited)"
+                echo -e "  ${RED}�?{NC} $service (exited)"
                 rm -f "$pid_file"
             fi
         else
             # Check if port is in use
             if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1; then
-                echo -e "  ${YELLOW}●${NC} $service (port $port in use)"
+                echo -e "  ${YELLOW}�?{NC} $service (port $port in use)"
             else
-                echo -e "  ${RED}●${NC} $service (not running)"
+                echo -e "  ${RED}�?{NC} $service (not running)"
             fi
         fi
     done
@@ -633,9 +644,9 @@ start_service() {
 
     if kill -0 "$pid" 2>/dev/null; then
         echo $pid > "$PID_DIR/${name}.pid"
-        echo -e "    ${GREEN}✓${NC} $name started (PID: $pid)"
+        echo -e "    ${GREEN}�?{NC} $name started (PID: $pid)"
     else
-        echo -e "    ${RED}✗${NC} $name failed to start, check log: $log_file"
+        echo -e "    ${RED}�?{NC} $name failed to start, check log: $log_file"
         return 1
     fi
 
@@ -647,7 +658,7 @@ check_service_health() {
     local name=$1
     local port=$2
     local health_path=$3
-    local max_retries=15
+    local max_retries=30
     local retry_interval=2
 
     echo -n "  Checking $name..."
@@ -656,14 +667,14 @@ check_service_health() {
         # Try health endpoint first if provided
         if [ -n "$health_path" ]; then
             if curl -s --connect-timeout 2 "http://localhost:$port$health_path" >/dev/null 2>&1; then
-                echo -e " ${GREEN}✓${NC} healthy (port $port)"
+                echo -e " ${GREEN}�?{NC} healthy (port $port)"
                 return 0
             fi
         fi
 
         # Fallback: try root endpoint or just check if port is responding
         if curl -s --connect-timeout 2 "http://localhost:$port/" >/dev/null 2>&1; then
-            echo -e " ${GREEN}✓${NC} healthy (port $port)"
+            echo -e " ${GREEN}�?{NC} healthy (port $port)"
             return 0
         fi
 
@@ -671,7 +682,7 @@ check_service_health() {
         if nc -z localhost $port 2>/dev/null; then
             # Port is open, give it a bit more time for HTTP
             if [ $i -ge 5 ]; then
-                echo -e " ${GREEN}✓${NC} responding (port $port)"
+                echo -e " ${GREEN}�?{NC} responding (port $port)"
                 return 0
             fi
         fi
@@ -679,7 +690,7 @@ check_service_health() {
         sleep $retry_interval
     done
 
-    echo -e " ${RED}✗${NC} failed (port $port not responding)"
+    echo -e " ${RED}�?{NC} failed (port $port not responding)"
     echo -e "    ${YELLOW}Check log: $PID_DIR/${name}.log${NC}"
     return 1
 }
@@ -687,7 +698,7 @@ check_service_health() {
 # Start all services
 start_services() {
     echo -e "${BLUE}╔════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║      Wegent One-Click Startup Script (Local Dev)      ║${NC}"
+    echo -e "${BLUE}�?     Wegent One-Click Startup Script (Local Dev)      �?{NC}"
     echo -e "${BLUE}╚════════════════════════════════════════════════════════╝${NC}"
     echo ""
 
@@ -697,33 +708,33 @@ start_services() {
     # Check Python
     PYTHON_CMD=$(detect_python)
     local python_version=$($PYTHON_CMD --version 2>&1)
-    echo -e "  ${GREEN}✓${NC} Python detected: $python_version"
+    echo -e "  ${GREEN}�?{NC} Python detected: $python_version"
 
     # Check uv
     if ! check_uv_installed; then
         show_uv_install_instructions
     fi
     local uv_version=$(uv --version 2>&1)
-    echo -e "  ${GREEN}✓${NC} uv detected: $uv_version"
+    echo -e "  ${GREEN}�?{NC} uv detected: $uv_version"
 
     if ! check_docker_installed; then
         show_docker_install_instructions
     fi
     local docker_version=$(docker --version | awk '{print $3}' | tr -d ',')
-    echo -e "  ${GREEN}✓${NC} docker detected: $docker_version"
+    echo -e "  ${GREEN}�?{NC} docker detected: $docker_version"
 
     # Check and start MySQL and Redis if needed
     check_mysql_redis
 
     # Check libmagic
     check_libmagic_installed
-    echo -e "  ${GREEN}✓${NC} libmagic detected"
+    echo -e "  ${GREEN}�?{NC} libmagic detected"
 
     # Check Node.js
     check_node_installed
     local node_version=$(node --version 2>&1)
     local npm_version=$(npm --version 2>&1)
-    echo -e "  ${GREEN}✓${NC} Node.js detected: $node_version (npm $npm_version)"
+    echo -e "  ${GREEN}�?{NC} Node.js detected: $node_version (npm $npm_version)"
 
     echo ""
     echo -e "${GREEN}Configuration:${NC}"
@@ -738,7 +749,7 @@ start_services() {
     if ! check_all_ports; then
         exit 1
     fi
-    echo -e "${GREEN}✓ All ports available${NC}"
+    echo -e "${GREEN}�?All ports available${NC}"
     echo ""
 
     # Sync Python dependencies
@@ -791,9 +802,9 @@ start_services() {
     sleep 3
 
     if kill -0 "$frontend_pid" 2>/dev/null; then
-        echo -e "    ${GREEN}✓${NC} frontend started (PID: $frontend_pid)"
+        echo -e "    ${GREEN}�?{NC} frontend started (PID: $frontend_pid)"
     else
-        echo -e "    ${RED}✗${NC} frontend failed to start, check log: $PID_DIR/frontend.log"
+        echo -e "    ${RED}�?{NC} frontend failed to start, check log: $PID_DIR/frontend.log"
     fi
 
     cd "$SCRIPT_DIR"
