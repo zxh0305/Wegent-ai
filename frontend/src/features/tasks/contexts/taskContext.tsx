@@ -25,7 +25,12 @@ import {
   getTaskViewStatus,
 } from '@/utils/taskViewStatus'
 import { useSocket } from '@/contexts/SocketContext'
-import { TaskCreatedPayload, TaskInvitedPayload, TaskStatusPayload } from '@/types/socket'
+import {
+  TaskCreatedPayload,
+  TaskInvitedPayload,
+  TaskStatusPayload,
+  TaskAppUpdatePayload,
+} from '@/types/socket'
 import { usePageVisibility } from '@/hooks/usePageVisibility'
 
 type TaskContextType = {
@@ -57,8 +62,6 @@ type TaskContextType = {
   markTaskAsViewed: (taskId: number, status: TaskStatus, taskTimestamp?: string) => void
   getUnreadCount: (tasks: Task[]) => number
   markAllTasksAsViewed: () => void
-  markGroupChatsAsViewed: () => void
-  markPersonalTasksAsViewed: () => void
   viewStatusVersion: number
   // Access denied state for 403 errors when accessing shared tasks
   accessDenied: boolean
@@ -625,6 +628,25 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
     },
     [selectedTask]
   )
+
+  // Handle task app update via WebSocket (sent to task room when expose_service updates app data)
+  const handleTaskAppUpdate = useCallback(
+    (data: TaskAppUpdatePayload) => {
+      console.log('[TaskContext] Received task:app_update', data)
+      // Only update if this is the currently selected task
+      if (selectedTask && selectedTask.id === data.task_id) {
+        setSelectedTaskDetail(prev => {
+          if (!prev) return prev
+          return {
+            ...prev,
+            app: data.app,
+          }
+        })
+      }
+    },
+    [selectedTask]
+  )
+
   // Register WebSocket event handlers for real-time task updates
   useEffect(() => {
     // Only register handlers when WebSocket is connected
@@ -636,12 +658,20 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
       onTaskCreated: handleTaskCreated,
       onTaskInvited: handleTaskInvited,
       onTaskStatus: handleTaskStatus,
+      onTaskAppUpdate: handleTaskAppUpdate,
     })
 
     return () => {
       cleanup()
     }
-  }, [isConnected, registerTaskHandlers, handleTaskCreated, handleTaskInvited, handleTaskStatus])
+  }, [
+    isConnected,
+    registerTaskHandlers,
+    handleTaskCreated,
+    handleTaskInvited,
+    handleTaskStatus,
+    handleTaskAppUpdate,
+  ])
 
   // Removed polling - relying entirely on WebSocket real-time updates
   // Task list will be updated via WebSocket events:
@@ -804,20 +834,6 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
     setViewStatusVersion(prev => prev + 1)
   }
 
-  // Handle marking all group chats as viewed
-  const handleMarkGroupChatsAsViewed = () => {
-    markAllTasksAsViewed(groupTasks)
-    // Trigger re-render by updating version
-    setViewStatusVersion(prev => prev + 1)
-  }
-
-  // Handle marking all personal tasks as viewed
-  const handleMarkPersonalTasksAsViewed = () => {
-    markAllTasksAsViewed(personalTasks)
-    // Trigger re-render by updating version
-    setViewStatusVersion(prev => prev + 1)
-  }
-
   // Wrapper for markTaskAsViewed that also triggers re-render
   // This ensures the unread dot disappears immediately when a task is clicked
   const handleMarkTaskAsViewed = useCallback(
@@ -865,8 +881,6 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
         markTaskAsViewed: handleMarkTaskAsViewed,
         getUnreadCount,
         markAllTasksAsViewed: handleMarkAllTasksAsViewed,
-        markGroupChatsAsViewed: handleMarkGroupChatsAsViewed,
-        markPersonalTasksAsViewed: handleMarkPersonalTasksAsViewed,
         viewStatusVersion,
         accessDenied,
         clearAccessDenied,

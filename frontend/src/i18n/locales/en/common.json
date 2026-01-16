@@ -75,7 +75,8 @@
   "user": {
     "default_name": "User",
     "logout": "Logout",
-    "login": "Login"
+    "login": "Login",
+    "menu": "User menu"
   },
   "chat": {
     "placeholder_chat": "Use the Agent team to explore and discover",
@@ -375,7 +376,6 @@
     "group_chats": "Group Chats",
     "group_chats_expand": "Show {{count}}{{suffix}} more",
     "group_chats_collapse": "Show less",
-    "mark_group_chats_read": "Mark all as read",
     "conversations": "Conversations",
     "search_placeholder": "Search task",
     "search_placeholder_chat": "Search conversation",
@@ -580,8 +580,18 @@
     "cannotUndo": "This action cannot be undone",
     "coming_soon": "Coming Soon"
   },
+  "dialog": {
+    "confirm_close_title": "Confirm Close",
+    "confirm_close_description": "You have unsaved changes. Are you sure you want to close?",
+    "confirm_close_cancel": "Cancel",
+    "confirm_close_confirm": "Close Anyway"
+  },
   "correction": {
     "result_title": "Correction Result"
+  },
+  "appPreview": {
+    "button": "Preview",
+    "title": "App Preview"
   },
   "userSearch": {
     "placeholder": "Search username or email...",
@@ -646,7 +656,10 @@
       }
     },
     "saving": "Saving...",
-    "save_token": "Save Token"
+    "save_token": "Save Token",
+    "auth_type": "Authentication Method",
+    "auth_type_digest": "Digest Auth",
+    "auth_type_basic": "Basic Auth"
   },
   "skills": {
     "title": "Skills",
