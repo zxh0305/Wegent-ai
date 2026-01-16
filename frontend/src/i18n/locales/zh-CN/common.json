@@ -402,6 +402,7 @@
     "search_hint": "输入关键词搜索对话",
     "clear_search": "清除",
     "mark_all_read": "全部标记为已读",
+    "mark_group_chats_read": "全部已读",
     "open_from": "<> Code",
     "open_from_vscode": "VSCode",
     "open_from_git": "Git",

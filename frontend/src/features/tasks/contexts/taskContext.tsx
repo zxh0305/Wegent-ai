@@ -21,6 +21,8 @@ import {
   markTaskAsViewed,
   getUnreadCount,
   markAllTasksAsViewed,
+  markGroupTasksAsViewed,
+  markPersonalTasksAsViewed,
   initializeTaskViewStatus,
   getTaskViewStatus,
 } from '@/utils/taskViewStatus'
@@ -62,6 +64,8 @@ type TaskContextType = {
   markTaskAsViewed: (taskId: number, status: TaskStatus, taskTimestamp?: string) => void
   getUnreadCount: (tasks: Task[]) => number
   markAllTasksAsViewed: () => void
+  markGroupChatsAsViewed: () => void
+  markPersonalTasksAsViewed: () => void
   viewStatusVersion: number
   // Access denied state for 403 errors when accessing shared tasks
   accessDenied: boolean
@@ -834,6 +838,20 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
     setViewStatusVersion(prev => prev + 1)
   }
 
+  // Handle marking all group chat tasks as viewed
+  const handleMarkGroupChatsAsViewed = useCallback(() => {
+    markGroupTasksAsViewed(groupTasks)
+    // Trigger re-render by updating version
+    setViewStatusVersion(prev => prev + 1)
+  }, [groupTasks])
+
+  // Handle marking all personal tasks as viewed
+  const handleMarkPersonalTasksAsViewed = useCallback(() => {
+    markPersonalTasksAsViewed(personalTasks)
+    // Trigger re-render by updating version
+    setViewStatusVersion(prev => prev + 1)
+  }, [personalTasks])
+
   // Wrapper for markTaskAsViewed that also triggers re-render
   // This ensures the unread dot disappears immediately when a task is clicked
   const handleMarkTaskAsViewed = useCallback(
@@ -881,6 +899,8 @@ export const TaskContextProvider = ({ children }: { children: ReactNode }) => {
         markTaskAsViewed: handleMarkTaskAsViewed,
         getUnreadCount,
         markAllTasksAsViewed: handleMarkAllTasksAsViewed,
+        markGroupChatsAsViewed: handleMarkGroupChatsAsViewed,
+        markPersonalTasksAsViewed: handleMarkPersonalTasksAsViewed,
         viewStatusVersion,
         accessDenied,
         clearAccessDenied,

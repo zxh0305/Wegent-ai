@@ -402,6 +402,7 @@
     "search_hint": "Enter keywords to search conversations",
     "clear_search": "Clear",
     "mark_all_read": "Mark all as read",
+    "mark_group_chats_read": "Mark all read",
     "open_from": "<> Code",
     "open_from_vscode": "VSCode",
     "open_from_git": "Git",

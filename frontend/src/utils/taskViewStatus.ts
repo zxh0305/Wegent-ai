@@ -168,6 +168,50 @@ export function markAllTasksAsViewed(tasks: Task[]): void {
 }
 
 /**
+ * Mark all group chat tasks as viewed
+ * For group chats, use updated_at as the viewed timestamp
+ */
+export function markGroupTasksAsViewed(tasks: Task[]): void {
+  const statusMap = getTaskViewStatusMap()
+
+  tasks.forEach(task => {
+    if (task.is_group_chat) {
+      // Use task's updated_at to ensure viewedAt >= taskUpdatedAt
+      const viewedAt = task.updated_at
+      statusMap[task.id] = {
+        viewedAt,
+        status: task.status,
+      }
+    }
+  })
+
+  const prunedMap = pruneOldViewStatus(statusMap)
+  saveTaskViewStatusMap(prunedMap)
+}
+
+/**
+ * Mark all personal (non-group-chat) tasks as viewed
+ * For personal tasks with terminal states, use completed_at or updated_at
+ */
+export function markPersonalTasksAsViewed(tasks: Task[]): void {
+  const statusMap = getTaskViewStatusMap()
+
+  tasks.forEach(task => {
+    if (!task.is_group_chat && ['COMPLETED', 'FAILED', 'CANCELLED'].includes(task.status)) {
+      // Use task's timestamp to ensure viewedAt >= taskUpdatedAt
+      const viewedAt = task.completed_at || task.updated_at
+      statusMap[task.id] = {
+        viewedAt,
+        status: task.status,
+      }
+    }
+  })
+
+  const prunedMap = pruneOldViewStatus(statusMap)
+  saveTaskViewStatusMap(prunedMap)
+}
+
+/**
  * Get unread count for a list of tasks
  */
 export function getUnreadCount(tasks: Task[]): number {
