@@ -80,7 +80,8 @@ export default function TaskSidebar({
     isSearching,
     isSearchResult,
     getUnreadCount,
-    markAllTasksAsViewed,
+    markGroupTasksAsViewed,
+    markPersonalTasksAsViewed,
     viewStatusVersion,
     setSelectedTask,
     isRefreshing,
@@ -156,18 +157,6 @@ export default function TaskSidebar({
     }
     setIsMobileSidebarOpen(false)
   }
-
-  // Mark all tasks as viewed
-  const handleMarkAllAsViewed = () => {
-    markAllTasksAsViewed()
-  }
-
-  // Calculate total unread count
-  // Include viewStatusVersion in dependencies to recalculate when view status changes
-  const totalUnreadCount = React.useMemo(() => {
-    return getUnreadCount(tasks)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tasks, getUnreadCount, viewStatusVersion])
 
   // Refs for separate scroll containers
   const groupScrollRef = useRef<HTMLDivElement>(null)
@@ -490,8 +479,8 @@ export default function TaskSidebar({
                 loadingMorePersonalTasks={loadingMorePersonalTasks}
                 viewStatusVersion={viewStatusVersion}
                 getUnreadCount={getUnreadCount}
-                totalUnreadCount={totalUnreadCount}
-                handleMarkAllAsViewed={handleMarkAllAsViewed}
+                handleMarkGroupTasksAsViewed={markGroupTasksAsViewed}
+                handleMarkPersonalTasksAsViewed={markPersonalTasksAsViewed}
                 handleOpenSearchDialog={handleOpenSearchDialog}
                 shortcutDisplayText={shortcutDisplayText}
                 setIsMobileSidebarOpen={setIsMobileSidebarOpen}
@@ -559,8 +548,8 @@ interface TaskHistorySectionProps {
   loadingMorePersonalTasks: boolean
   viewStatusVersion: number
   getUnreadCount: (tasks: Task[]) => number
-  totalUnreadCount: number
-  handleMarkAllAsViewed: () => void
+  handleMarkGroupTasksAsViewed: () => void
+  handleMarkPersonalTasksAsViewed: () => void
   handleOpenSearchDialog: () => void
   shortcutDisplayText: string
   setIsMobileSidebarOpen: (open: boolean) => void
@@ -587,8 +576,8 @@ function TaskHistorySection({
   loadingMorePersonalTasks,
   viewStatusVersion,
   getUnreadCount,
-  totalUnreadCount,
-  handleMarkAllAsViewed,
+  handleMarkGroupTasksAsViewed,
+  handleMarkPersonalTasksAsViewed,
   handleOpenSearchDialog,
   shortcutDisplayText,
   setIsMobileSidebarOpen,
@@ -649,7 +638,7 @@ function TaskHistorySection({
               <span>{t('common:tasks.group_chats')}</span>
               {unreadGroupChats.length > 0 && (
                 <button
-                  onClick={handleMarkAllAsViewed}
+                  onClick={handleMarkGroupTasksAsViewed}
                   className="text-xs text-text-muted hover:text-text-primary transition-colors"
                 >
                   {t('common:tasks.mark_all_read')} ({unreadGroupChats.length})
@@ -773,12 +762,12 @@ function TaskHistorySection({
                   </Tooltip>
                 </TooltipProvider>
               </div>
-              {totalUnreadCount > 0 && (
+              {getUnreadCount(filteredPersonalTasks) > 0 && (
                 <button
-                  onClick={handleMarkAllAsViewed}
+                  onClick={handleMarkPersonalTasksAsViewed}
                   className="text-xs text-text-muted hover:text-text-primary transition-colors"
                 >
-                  {t('common:tasks.mark_all_read')} ({totalUnreadCount})
+                  {t('common:tasks.mark_all_read')} ({getUnreadCount(filteredPersonalTasks)})
                 </button>
               )}
             </div>
