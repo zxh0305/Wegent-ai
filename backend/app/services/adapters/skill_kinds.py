@@ -85,6 +85,7 @@ class SkillKindsService:
                 "author": metadata.get("author"),
                 "tags": metadata.get("tags"),
                 "bindShells": metadata.get("bindShells"),
+                "config": metadata.get("config"),
                 "tools": metadata.get("tools"),
                 "provider": metadata.get("provider"),
                 "preload": metadata.get("preload", False),
@@ -375,6 +376,7 @@ class SkillKindsService:
                 "author": metadata.get("author"),
                 "tags": metadata.get("tags"),
                 "bindShells": metadata.get("bindShells"),
+                "config": metadata.get("config"),
                 "tools": metadata.get("tools"),
                 "provider": metadata.get("provider"),
                 "preload": metadata.get("preload", False),
@@ -693,7 +695,10 @@ class SkillKindsService:
         metadata = ObjectMeta(
             name=kind.name,
             namespace=kind.namespace,
-            labels={"id": str(kind.id)},  # Store database ID in labels
+            labels={
+                "id": str(kind.id),
+                "user_id": str(kind.user_id),
+            },  # Store database ID and user_id in labels
         )
         return Skill(
             apiVersion=kind.json.get("apiVersion", "agent.wecode.io/v1"),

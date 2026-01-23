@@ -47,6 +47,8 @@ class ChatRequest:
     is_group_chat: bool = False
     # User subtask ID for RAG result persistence (different from subtask_id which is AI response's subtask)
     user_subtask_id: Optional[int] = None
+    # History limit for subscription tasks (most recent N messages)
+    history_limit: Optional[int] = None
 
     # Model configuration
     model_config: dict = field(default_factory=dict)
@@ -99,6 +101,14 @@ class ChatRequest:
     # Extra tools to add
     extra_tools: list = field(default_factory=list)
 
+    # Authentication
+    auth_token: str = (
+        ""  # JWT token for API authentication (e.g., attachment upload/download)
+    )
+
+    # Subscription task flag - when True, SilentExitTool will be added in chat_shell
+    is_subscription: bool = False
+
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization."""
         return {
@@ -114,6 +124,7 @@ class ChatRequest:
             "message_id": self.message_id,
             "user_message_id": self.user_message_id,
             "is_group_chat": self.is_group_chat,
+            "history_limit": self.history_limit,
             "model_config": self.model_config,
             "system_prompt": self.system_prompt,
             "contexts": self.contexts,
@@ -136,6 +147,8 @@ class ChatRequest:
             "task_data": self.task_data,
             "extra_tools": self.extra_tools,
             "mcp_servers": self.mcp_servers,
+            "auth_token": self.auth_token,
+            "is_subscription": self.is_subscription,
         }
 
 

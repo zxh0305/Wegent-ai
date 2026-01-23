@@ -33,6 +33,9 @@ from app.api.endpoints.adapter import (
     models,
     retrievers,
     shells,
+    subscription_follows,
+    subscription_market,
+    subscriptions,
     task_knowledge_bases,
     task_members,
     tasks,
@@ -63,6 +66,25 @@ api_router.include_router(models.router, prefix="/models", tags=["public-models"
 api_router.include_router(shells.router, prefix="/shells", tags=["shells"])
 api_router.include_router(agents.router, prefix="/agents", tags=["public-shell"])
 api_router.include_router(teams.router, prefix="/teams", tags=["teams"])
+api_router.include_router(
+    subscriptions.router, prefix="/subscriptions", tags=["subscriptions"]
+)
+# Subscription follow endpoints (follow, unfollow, invitations)
+api_router.include_router(
+    subscription_follows.router, prefix="/subscriptions", tags=["subscription-follows"]
+)
+api_router.include_router(
+    subscription_follows.user_router, prefix="/users/me", tags=["user-subscriptions"]
+)
+api_router.include_router(
+    subscription_follows.invitation_router,
+    prefix="/subscription-invitations",
+    tags=["subscription-invitations"],
+)
+# Subscription market endpoints (browse, rent, rentals)
+api_router.include_router(
+    subscription_market.router, prefix="/market", tags=["subscription-market"]
+)
 api_router.include_router(tasks.router, prefix="/tasks", tags=["tasks"])
 api_router.include_router(subtasks.router, prefix="/subtasks", tags=["subtasks"])
 api_router.include_router(task_members.router, prefix="/tasks", tags=["task-members"])

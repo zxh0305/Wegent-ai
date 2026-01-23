@@ -12,7 +12,6 @@ from typing import Any, Dict, List, Optional
 logger = logging.getLogger(__name__)
 
 from fastapi import HTTPException
-from shared.utils.crypto import decrypt_sensitive_data, is_data_encrypted
 from sqlalchemy import literal_column, union_all
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.attributes import flag_modified
@@ -27,6 +26,7 @@ from app.services.base import BaseService
 from app.services.readers.kinds import KindType, kindReader
 from app.services.readers.shared_teams import sharedTeamReader
 from app.services.readers.users import userReader
+from shared.utils.crypto import decrypt_sensitive_data, is_data_encrypted
 
 
 class TeamKindsService(BaseService[Kind, TeamCreate, TeamUpdate]):
@@ -1359,6 +1359,17 @@ class TeamKindsService(BaseService[Kind, TeamCreate, TeamUpdate]):
         # Get bind_mode from spec (directly, not from workflow)
         bind_mode = team_crd.spec.bind_mode
 
+        # Derive recommended_mode from bind_mode
+        # 'both' if both modes, 'code' if only code, 'chat' otherwise
+        recommended_mode = "chat"  # default
+        if bind_mode:
+            has_code = "code" in bind_mode
+            has_chat = "chat" in bind_mode
+            if has_code and has_chat:
+                recommended_mode = "both"
+            elif has_code:
+                recommended_mode = "code"
+
         # Get description from spec
         description = team_crd.spec.description
 
@@ -1380,6 +1391,7 @@ class TeamKindsService(BaseService[Kind, TeamCreate, TeamUpdate]):
             "bots": bots,
             "workflow": workflow,
             "bind_mode": bind_mode,
+            "recommended_mode": recommended_mode,  # Add recommended_mode field
             "is_mix_team": is_mix_team,
             "is_active": team.is_active,
             "created_at": team.created_at,
@@ -1541,6 +1553,17 @@ class TeamKindsService(BaseService[Kind, TeamCreate, TeamUpdate]):
         # Get bind_mode from spec (directly, not from workflow)
         bind_mode = team_crd.spec.bind_mode
 
+        # Derive recommended_mode from bind_mode
+        # 'both' if both modes, 'code' if only code, 'chat' otherwise
+        recommended_mode = "chat"  # default
+        if bind_mode:
+            has_code = "code" in bind_mode
+            has_chat = "chat" in bind_mode
+            if has_code and has_chat:
+                recommended_mode = "both"
+            elif has_code:
+                recommended_mode = "code"
+
         # Get description from spec
         description = team_crd.spec.description
 
@@ -1556,6 +1579,7 @@ class TeamKindsService(BaseService[Kind, TeamCreate, TeamUpdate]):
             "bots": bots,
             "workflow": workflow,
             "bind_mode": bind_mode,
+            "recommended_mode": recommended_mode,  # Add recommended_mode field
             "is_mix_team": is_mix_team,
             "is_active": team.is_active,
             "created_at": team.created_at,

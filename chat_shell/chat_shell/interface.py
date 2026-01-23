@@ -100,6 +100,17 @@ class ChatRequest:
     # Extra tools to add
     extra_tools: list = field(default_factory=list)
 
+    # History limit for subscription tasks
+    history_limit: Optional[int] = None  # Max number of history messages to load
+
+    # Authentication
+    auth_token: str = (
+        ""  # JWT token for API authentication (e.g., attachment upload/download)
+    )
+
+    # Subscription task flag - when True, SilentExitTool will be added
+    is_subscription: bool = False
+
 
 @dataclass
 class ChatEvent:
