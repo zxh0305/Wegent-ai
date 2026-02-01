@@ -174,7 +174,7 @@ Frontend (Next.js) → Backend (FastAPI) → Executor Manager → Executors (Cla
         <a href="https://github.com/zxh0305">
             <img src="https://avatars.githubusercontent.com/u/233409934?v=4" width="80;" alt="zxh0305"/>
             <br />
-            <sub><b>zxh0305</b></sub>
+            <sub><b>Zxh0305</b></sub>
         </a>
     </td>
     <td align="center">
